@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Capability Embedding</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 35px 8%;
+        }
+
+        header h1 {
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            margin-bottom: 25px;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        }
+
+        .card h2 {
+            margin-bottom: 22px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .result {
+            background: #f8fafc;
+            padding: 22px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .result h3 {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .value {
+            font-size: 27px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f1f5f9;
+        }
+
+        .composition {
+            margin-top: 20px;
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media(max-width: 800px) {
+
+            .grid,
+            .results {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+    <h1>Capability Embedding for Composition</h1>
+
+    <p>
+        Vector-based analysis of states, goals and capabilities
+    </p>
+
+</header>
+
+
+<div class="container">
+
+
+    <div class="card">
+
+        <h2>Capability Analysis</h2>
+
+        <div class="grid">
+
+
+            <div>
+
+                <label>Current State</label>
+
+                <select id="state">
+
+                    {% for state in states %}
+
+                    <option value="{{ state }}">
+                        {{ state }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>Goal</label>
+
+                <select disabled>
+
+                    <option>
+                        Complete Order
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>Capability 1</label>
+
+                <select id="capability1">
+
+                    {% for capability in capabilities %}
+
+                    <option value="{{ capability }}">
+                        {{ capability }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>Capability 2</label>
+
+                <select id="capability2">
+
+                    {% for capability in capabilities %}
+
+                    <option value="{{ capability }}">
+                        {{ capability }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+        <button onclick="analyze()">
+
+            Analyze Capabilities
+
+        </button>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Analysis Results</h2>
+
+
+        <div class="results">
+
+
+            <div class="result">
+
+                <h3>Compatibility</h3>
+
+                <div class="value" id="compatibility">
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="result">
+
+                <h3>Goal Relevance</h3>
+
+                <div class="value" id="relevance">
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="result">
+
+                <h3>Similarity</h3>
+
+                <div class="value" id="similarity">
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="result">
+
+                <h3>Applicability</h3>
+
+                <div class="value" id="applicability">
+                    --
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="status" id="status">
+
+            Choose capabilities and click
+            <b>Analyze Capabilities</b>.
+
+        </div>
+
+
+        <div class="composition hidden" id="composition">
+
+        </div>
+
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>How It Works</h2>
+
+        <p>
+
+            The system represents states, goals and capabilities
+            using block-structured vector embeddings. Compatibility,
+            composition, similarity and goal relevance are calculated
+            using vector algebra.
+
+        </p>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+async function analyze() {
+
+    const state =
+        document.getElementById("state").value;
+
+    const capability1 =
+        document.getElementById("capability1").value;
+
+    const capability2 =
+        document.getElementById("capability2").value;
+
+
+    const response = await fetch("/analyze", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+            state: state,
+
+            capability1: capability1,
+
+            capability2: capability2
+
+        })
+
+    });
+
+
+    const result = await response.json();
+
+
+    document.getElementById("compatibility").innerText =
+        result.compatibility.toFixed(3);
+
+
+    document.getElementById("relevance").innerText =
+        result.goal_relevance.toFixed(3);
+
+
+    document.getElementById("similarity").innerText =
+        result.similarity.toFixed(3);
+
+
+    document.getElementById("applicability").innerText =
+        result.applicability.toFixed(3);
+
+
+    document.getElementById("status").innerHTML =
+
+        "Capabilities: <b>" +
+        result.capability1 +
+        "</b> → <b>" +
+        result.capability2 +
+        "</b><br><br>" +
+
+        "Composable: <b>" +
+        (result.composable ? "Yes" : "No") +
+        "</b>";
+
+
+    const composition =
+        document.getElementById("composition");
+
+    composition.classList.remove("hidden");
+
+
+    if (result.composition.error) {
+
+        composition.innerHTML =
+            "<b>Composition:</b> " +
+            result.composition.error;
+
+    }
+
+    else {
+
+        composition.innerHTML =
+
+            "<b>Composition successful</b><br><br>" +
+
+            "Composite capability: <b>" +
+            result.composition.name +
+            "</b><br>" +
+
+            "Embedding dimension: <b>" +
+            result.composition.dimension +
+            "</b>";
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>

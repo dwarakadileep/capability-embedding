@@ -141,8 +141,8 @@
    "chains_tested": 400,
    "max_vec_vs_formal_diff": 1.6653345369377348e-16,
    "semantic_sound": 1.0,
-   "encode_us": 17.066585000122814,
-   "compat_matrix_ms": 0.11491016000036325,
+   "encode_us": 21.949500078335404,
+   "compat_matrix_ms": 0.12180399848148227,
    "bytes_per_cap": 912
   },
   "filepipeline": {
@@ -160,8 +160,8 @@
    "chains_tested": 91,
    "max_vec_vs_formal_diff": 1.249000902703301e-16,
    "semantic_sound": 1.0,
-   "encode_us": 17.12835999995832,
-   "compat_matrix_ms": 0.08554075999995803,
+   "encode_us": 22.875500144436955,
+   "compat_matrix_ms": 0.11265600100159645,
    "bytes_per_cap": 608
   },
   "assignment_pattern": {
@@ -179,25 +179,25 @@
    "chains_tested": 1,
    "max_vec_vs_formal_diff": 0.0,
    "semantic_sound": 1.0,
-   "encode_us": 14.080099999915774,
-   "compat_matrix_ms": 0.07006514000011066,
+   "encode_us": 18.12900009099394,
+   "compat_matrix_ms": 0.09926399914547801,
    "bytes_per_cap": 360
   }
  },
  "scaling": {
   "100": {
    "dim": 293,
-   "all_pairs_ms": 1.0553309999750127,
+   "all_pairs_ms": 1.344099990092218,
    "mem_MB": 0.2344
   },
   "500": {
    "dim": 293,
-   "all_pairs_ms": 13.274750000022095,
+   "all_pairs_ms": 11.056000017561018,
    "mem_MB": 1.172
   },
   "2000": {
    "dim": 293,
-   "all_pairs_ms": 147.82800800000473,
+   "all_pairs_ms": 130.73870004154742,
    "mem_MB": 4.688
   }
  }
