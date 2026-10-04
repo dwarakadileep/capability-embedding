@@ -1,0 +1,93 @@
+{
+ "name": "assignment_pattern",
+ "goal": [
+  "Payment.status==SUCCESS"
+ ],
+ "states": {
+  "start": {
+   "vars": {
+    "Order.exists": false,
+    "Payment.status": "NOT_STARTED"
+   },
+   "data": []
+  }
+ },
+ "capabilities": [
+  {
+   "name": "CreateOrder",
+   "type": "API",
+   "pre": [],
+   "eff": [
+    "Order.exists==true"
+   ],
+   "inputs": [],
+   "outputs": [],
+   "constraints": [],
+   "resources": [],
+   "cost": {},
+   "reliability": 1.0,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/orders"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "MakePayment",
+   "type": "API",
+   "pre": [
+    "Order.exists==true"
+   ],
+   "eff": [
+    "Payment.status==SUCCESS"
+   ],
+   "inputs": [],
+   "outputs": [],
+   "constraints": [],
+   "resources": [],
+   "cost": {},
+   "reliability": 1.0,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/payments"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "CancelCart",
+   "type": "API",
+   "pre": [
+    "Order.exists==false"
+   ],
+   "eff": [
+    "Cart.exists==false"
+   ],
+   "inputs": [],
+   "outputs": [],
+   "constraints": [],
+   "resources": [],
+   "cost": {},
+   "reliability": 1.0,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "DELETE",
+    "endpoint": "/carts"
+   },
+   "group": null,
+   "role": "relevant"
+  }
+ ],
+ "chains": [
+  [
+   "CreateOrder",
+   "MakePayment"
+  ]
+ ]
+}

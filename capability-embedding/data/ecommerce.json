@@ -1,0 +1,735 @@
+{
+ "name": "ecommerce",
+ "goal": [
+  "Order.exists==true",
+  "Payment.status==SUCCESS",
+  "Notification.sent==true"
+ ],
+ "states": {
+  "warm": {
+   "vars": {
+    "User.authenticated": true,
+    "User.role": "CUSTOMER",
+    "Cart.exists": true,
+    "Cart.item_count": 3,
+    "Order.exists": false,
+    "Payment.status": "NOT_STARTED",
+    "Inventory.available": true,
+    "Notification.sent": false,
+    "Payment.amount_within_limit": true,
+    "Quantity.valid": true
+   },
+   "data": [
+    "cart_id:UUID",
+    "auth_token:TOKEN",
+    "item_id:UUID",
+    "payment_method:STRING"
+   ]
+  },
+  "cold": {
+   "vars": {
+    "User.authenticated": false,
+    "User.role": "CUSTOMER",
+    "Cart.exists": false,
+    "Cart.item_count": 0,
+    "Order.exists": false,
+    "Payment.status": "NOT_STARTED",
+    "Inventory.available": true,
+    "Notification.sent": false,
+    "Payment.amount_within_limit": true,
+    "Quantity.valid": true
+   },
+   "data": [
+    "credentials:STRING",
+    "item_id:UUID",
+    "payment_method:STRING"
+   ]
+  }
+ },
+ "capabilities": [
+  {
+   "name": "Authenticate",
+   "type": "API",
+   "pre": [],
+   "eff": [
+    "User.authenticated==true"
+   ],
+   "inputs": [
+    [
+     "credentials",
+     "STRING",
+     "any",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "auth_token",
+     "TOKEN",
+     "jwt"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "Auth service",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 150,
+    "money": 0.0,
+    "resource": 1,
+    "risk": 0.02
+   },
+   "reliability": 0.995,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/login"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "CreateCart",
+   "type": "API",
+   "pre": [
+    "User.authenticated==true"
+   ],
+   "eff": [
+    "Cart.exists==true"
+   ],
+   "inputs": [
+    [
+     "auth_token",
+     "TOKEN",
+     "jwt",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "cart_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "Database",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 80,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.998,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/carts"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "AddItem",
+   "type": "API",
+   "pre": [
+    "Cart.exists==true"
+   ],
+   "eff": [
+    "Cart.item_count==1"
+   ],
+   "inputs": [
+    [
+     "cart_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ],
+    [
+     "item_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [
+    "Quantity.valid==true"
+   ],
+   "resources": [
+    "Database",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 90,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.997,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/carts/items"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "CreateOrder_API",
+   "type": "API",
+   "pre": [
+    "User.authenticated==true",
+    "Cart.exists==true",
+    "Cart.item_count>0",
+    "Inventory.available==true"
+   ],
+   "eff": [
+    "Order.exists==true",
+    "Order.status==CREATED",
+    "Cart.locked==true"
+   ],
+   "inputs": [
+    [
+     "cart_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [
+    "User.role in {CUSTOMER,ADMIN}"
+   ],
+   "resources": [
+    "Database",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 120,
+    "money": 0.001,
+    "resource": 2,
+    "risk": 0.02
+   },
+   "reliability": 0.99,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/orders"
+   },
+   "group": "create_order",
+   "role": "relevant"
+  },
+  {
+   "name": "CreateOrder_DB",
+   "type": "DATABASE",
+   "pre": [
+    "User.authenticated==true",
+    "Cart.exists==true",
+    "Cart.item_count>0",
+    "Inventory.available==true"
+   ],
+   "eff": [
+    "Order.exists==true",
+    "Order.status==CREATED",
+    "Cart.locked==true"
+   ],
+   "inputs": [
+    [
+     "cart_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [
+    "User.role in {CUSTOMER,ADMIN}"
+   ],
+   "resources": [
+    "Database"
+   ],
+   "cost": {
+    "time_ms": 15,
+    "money": 0.0,
+    "resource": 1,
+    "risk": 0.05
+   },
+   "reliability": 0.97,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "operation": "INSERT",
+    "table": "orders"
+   },
+   "group": "create_order",
+   "role": "relevant"
+  },
+  {
+   "name": "CreateOrder_GUI",
+   "type": "GUI",
+   "pre": [
+    "User.authenticated==true",
+    "Cart.exists==true",
+    "Cart.item_count>0",
+    "Inventory.available==true"
+   ],
+   "eff": [
+    "Order.exists==true",
+    "Order.status==CREATED",
+    "Cart.locked==true"
+   ],
+   "inputs": [
+    [
+     "cart_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [
+    "User.role in {CUSTOMER,ADMIN}"
+   ],
+   "resources": [
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 2500,
+    "money": 0.0,
+    "resource": 3,
+    "risk": 0.15
+   },
+   "reliability": 0.9,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "action": "CLICK",
+    "component": "submit_button"
+   },
+   "group": "create_order",
+   "role": "relevant"
+  },
+  {
+   "name": "MakePayment_Gateway",
+   "type": "API",
+   "pre": [
+    "Order.exists==true"
+   ],
+   "eff": [
+    "Payment.status==SUCCESS"
+   ],
+   "inputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ],
+    [
+     "payment_method",
+     "STRING",
+     "any",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "payment_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [
+    "Payment.amount_within_limit==true"
+   ],
+   "resources": [
+    "Payment gateway",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 800,
+    "money": 0.03,
+    "resource": 2,
+    "risk": 0.05
+   },
+   "reliability": 0.95,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/payments"
+   },
+   "group": "payment",
+   "role": "relevant"
+  },
+  {
+   "name": "MakePayment_Backup",
+   "type": "API",
+   "pre": [
+    "Order.exists==true"
+   ],
+   "eff": [
+    "Payment.status==SUCCESS"
+   ],
+   "inputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ],
+    [
+     "payment_method",
+     "STRING",
+     "any",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "payment_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [
+    "Payment.amount_within_limit==true"
+   ],
+   "resources": [
+    "Payment gateway",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 1500,
+    "money": 0.1,
+    "resource": 2,
+    "risk": 0.02
+   },
+   "reliability": 0.995,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "POST",
+    "endpoint": "/payments/backup"
+   },
+   "group": "payment",
+   "role": "relevant"
+  },
+  {
+   "name": "MakePayment_Bank",
+   "type": "SERVICE",
+   "pre": [
+    "Order.exists==true"
+   ],
+   "eff": [
+    "Payment.status==SUCCESS"
+   ],
+   "inputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ],
+    [
+     "payment_method",
+     "STRING",
+     "any",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "payment_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [
+    "Payment.amount_within_limit==true"
+   ],
+   "resources": [
+    "External service",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 600,
+    "money": 0.01,
+    "resource": 2,
+    "risk": 0.08
+   },
+   "reliability": 0.999,
+   "availability": 1.0,
+   "window": [
+    9,
+    17
+   ],
+   "mechanism": {
+    "service": "bank_transfer",
+    "mode": "batch"
+   },
+   "group": "payment",
+   "role": "relevant"
+  },
+  {
+   "name": "SendNotification",
+   "type": "EVENT",
+   "pre": [
+    "Payment.status==SUCCESS"
+   ],
+   "eff": [
+    "Notification.sent==true"
+   ],
+   "inputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 60,
+    "money": 0.0005,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.99,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "trigger": "PaymentSucceeded",
+    "handler": "SendNotification"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "CancelCart",
+   "type": "API",
+   "pre": [
+    "Order.exists==false",
+    "Cart.exists==true"
+   ],
+   "eff": [
+    "Cart.exists==false"
+   ],
+   "inputs": [
+    [
+     "cart_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "Database"
+   ],
+   "cost": {
+    "time_ms": 50,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.998,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "DELETE",
+    "endpoint": "/carts"
+   },
+   "group": null,
+   "role": "irrelevant"
+  },
+  {
+   "name": "GenerateReport",
+   "type": "COMPUTATION",
+   "pre": [
+    "Order.exists==true"
+   ],
+   "eff": [
+    "Report.generated==true"
+   ],
+   "inputs": [
+    [
+     "order_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "report_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "Database"
+   ],
+   "cost": {
+    "time_ms": 900,
+    "resource": 3,
+    "energy": 2,
+    "risk": 0.01
+   },
+   "reliability": 0.99,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "function": "build_report"
+   },
+   "group": null,
+   "role": "irrelevant"
+  },
+  {
+   "name": "UpdateProfile",
+   "type": "API",
+   "pre": [
+    "User.authenticated==true"
+   ],
+   "eff": [
+    "User.profile_updated==true"
+   ],
+   "inputs": [],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "Database",
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 70,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.998,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "PUT",
+    "endpoint": "/profile"
+   },
+   "group": null,
+   "role": "irrelevant"
+  },
+  {
+   "name": "SendMarketingEmail",
+   "type": "MESSAGE",
+   "pre": [
+    "User.authenticated==true"
+   ],
+   "eff": [
+    "Marketing.sent==true"
+   ],
+   "inputs": [],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 40,
+    "money": 0.002,
+    "resource": 1,
+    "risk": 0.03
+   },
+   "reliability": 0.98,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "channel": "email",
+    "template": "promo"
+   },
+   "group": null,
+   "role": "irrelevant"
+  },
+  {
+   "name": "ExportLogs",
+   "type": "FILE",
+   "pre": [],
+   "eff": [
+    "Logs.exported==true"
+   ],
+   "inputs": [],
+   "outputs": [
+    [
+     "log_file",
+     "PATH",
+     "any"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "File system"
+   ],
+   "cost": {
+    "time_ms": 300,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.999,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "path": "/var/log",
+    "format": "csv"
+   },
+   "group": null,
+   "role": "irrelevant"
+  }
+ ],
+ "chains": [
+  [
+   "CreateOrder_API",
+   "MakePayment_Gateway",
+   "SendNotification"
+  ],
+  [
+   "CreateOrder_DB",
+   "MakePayment_Backup",
+   "SendNotification"
+  ],
+  [
+   "Authenticate",
+   "CreateCart",
+   "AddItem",
+   "CreateOrder_API",
+   "MakePayment_Gateway",
+   "SendNotification"
+  ]
+ ]
+}

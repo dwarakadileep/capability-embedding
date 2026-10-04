@@ -1,0 +1,334 @@
+{
+ "name": "filepipeline",
+ "goal": [
+  "File.archived==true",
+  "Owner.notified==true"
+ ],
+ "states": {
+  "start": {
+   "vars": {
+    "File.uploaded": false,
+    "Storage.free": true,
+    "Owner.known": true
+   },
+   "data": [
+    "raw_bytes:BYTES"
+   ]
+  }
+ },
+ "capabilities": [
+  {
+   "name": "UploadFile",
+   "type": "API",
+   "pre": [
+    "Storage.free==true"
+   ],
+   "eff": [
+    "File.uploaded==true"
+   ],
+   "inputs": [
+    [
+     "raw_bytes",
+     "BYTES",
+     "any",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "file_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 400,
+    "resource": 1,
+    "risk": 0.03
+   },
+   "reliability": 0.98,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "method": "PUT",
+    "endpoint": "/files"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "ValidateFile",
+   "type": "FUNCTION",
+   "pre": [
+    "File.uploaded==true"
+   ],
+   "eff": [
+    "File.valid==true"
+   ],
+   "inputs": [
+    [
+     "file_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [],
+   "resources": [],
+   "cost": {
+    "time_ms": 40,
+    "resource": 1
+   },
+   "reliability": 0.999,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "function": "validate"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "ConvertToPDF",
+   "type": "COMPUTATION",
+   "pre": [
+    "File.valid==true"
+   ],
+   "eff": [
+    "File.format==PDF"
+   ],
+   "inputs": [
+    [
+     "file_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "pdf_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "CPU"
+   ],
+   "cost": {
+    "time_ms": 1200,
+    "resource": 4,
+    "energy": 3,
+    "risk": 0.04
+   },
+   "reliability": 0.96,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "function": "convert",
+    "to": "pdf"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "StoreArchive",
+   "type": "DATABASE",
+   "pre": [
+    "File.format==PDF"
+   ],
+   "eff": [
+    "File.archived==true"
+   ],
+   "inputs": [
+    [
+     "pdf_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "Database"
+   ],
+   "cost": {
+    "time_ms": 30,
+    "resource": 1,
+    "risk": 0.01
+   },
+   "reliability": 0.995,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "operation": "INSERT",
+    "table": "archive"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "NotifyOwner",
+   "type": "MESSAGE",
+   "pre": [
+    "File.archived==true",
+    "Owner.known==true"
+   ],
+   "eff": [
+    "Owner.notified==true"
+   ],
+   "inputs": [],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "Network"
+   ],
+   "cost": {
+    "time_ms": 60,
+    "money": 0.0005,
+    "resource": 1
+   },
+   "reliability": 0.99,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "channel": "email",
+    "template": "archived"
+   },
+   "group": null,
+   "role": "relevant"
+  },
+  {
+   "name": "ResizeImage",
+   "type": "COMPUTATION",
+   "pre": [
+    "File.valid==true"
+   ],
+   "eff": [
+    "File.format==PNG"
+   ],
+   "inputs": [
+    [
+     "file_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [
+    [
+     "png_id",
+     "UUID",
+     "valid UUIDs"
+    ]
+   ],
+   "constraints": [],
+   "resources": [
+    "CPU"
+   ],
+   "cost": {
+    "time_ms": 500,
+    "resource": 2,
+    "energy": 1
+   },
+   "reliability": 0.98,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "function": "resize",
+    "to": "png"
+   },
+   "group": null,
+   "role": "irrelevant"
+  },
+  {
+   "name": "DeleteFile",
+   "type": "FILE",
+   "pre": [
+    "File.uploaded==true"
+   ],
+   "eff": [
+    "File.uploaded==false"
+   ],
+   "inputs": [
+    [
+     "file_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "File system"
+   ],
+   "cost": {
+    "time_ms": 20,
+    "resource": 1,
+    "risk": 0.2
+   },
+   "reliability": 0.999,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "op": "unlink"
+   },
+   "group": null,
+   "role": "irrelevant"
+  },
+  {
+   "name": "ScanVirus",
+   "type": "SERVICE",
+   "pre": [
+    "File.uploaded==true"
+   ],
+   "eff": [
+    "File.scanned==true"
+   ],
+   "inputs": [
+    [
+     "file_id",
+     "UUID",
+     "valid UUIDs",
+     true
+    ]
+   ],
+   "outputs": [],
+   "constraints": [],
+   "resources": [
+    "External service"
+   ],
+   "cost": {
+    "time_ms": 2000,
+    "money": 0.02,
+    "resource": 2
+   },
+   "reliability": 0.97,
+   "availability": 1.0,
+   "window": null,
+   "mechanism": {
+    "service": "av",
+    "mode": "sync"
+   },
+   "group": null,
+   "role": "irrelevant"
+  }
+ ],
+ "chains": [
+  [
+   "UploadFile",
+   "ValidateFile",
+   "ConvertToPDF",
+   "StoreArchive",
+   "NotifyOwner"
+  ]
+ ]
+}

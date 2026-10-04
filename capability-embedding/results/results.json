@@ -1,0 +1,204 @@
+{
+ "exp1": {
+  "c1_c2": {
+   "feed": 1.0,
+   "feed_pre": 1.0,
+   "feed_io": 0.0,
+   "conflict": 0.0,
+   "score": 1.0,
+   "composable": true
+  },
+  "c1_c3": {
+   "feed": 0.0,
+   "feed_pre": 0.0,
+   "feed_io": 0.0,
+   "conflict": 1.0,
+   "score": 0.0,
+   "composable": false
+  },
+  "cos_c1_c2": 0.19364916731037085,
+  "cos_c1_c3": 0.0645497224367903,
+  "passed": true
+ },
+ "exp2": {
+  "max_diff": 6.938893903907228e-17,
+  "associativity_gap": 1.1102230246251565e-16,
+  "similarity": {
+   "CreateOrder_API": {
+    "function": 0.7559289460184544,
+    "full": 0.8133468935657818
+   },
+   "MakePayment_Gateway": {
+    "function": 0.5345224838248487,
+    "full": 0.4367301722629457
+   },
+   "SendNotification": {
+    "function": 0.3779644730092272,
+    "full": 0.16574668551754634
+   }
+  },
+  "reversed_rejected": true,
+  "reliability": 0.931095,
+  "goal_progress_after": 1.0
+ },
+ "exp3": {
+  "rows": [
+   {
+    "pair": "CreateOrder_API~CreateOrder_DB",
+    "function": 1.0,
+    "full": 0.949856640034051,
+    "identical_vec": false,
+    "composable": false
+   },
+   {
+    "pair": "CreateOrder_API~CreateOrder_GUI",
+    "function": 1.0,
+    "full": 0.949856640034051,
+    "identical_vec": false,
+    "composable": false
+   },
+   {
+    "pair": "CreateOrder_DB~CreateOrder_GUI",
+    "function": 1.0,
+    "full": 0.9467455621301775,
+    "identical_vec": false,
+    "composable": false
+   }
+  ],
+  "ref_unrelated": 0.052145957541331334,
+  "passed": true
+ },
+ "exp4": {
+  "warm": {
+   "relevance": {
+    "Authenticate": 0.0,
+    "CreateCart": 0.0,
+    "AddItem": 0.0,
+    "CreateOrder_API": 0.3333333333333333,
+    "CreateOrder_DB": 0.3333333333333333,
+    "CreateOrder_GUI": 0.3333333333333333,
+    "MakePayment_Gateway": 0.3333333333333333,
+    "MakePayment_Backup": 0.3333333333333333,
+    "MakePayment_Bank": 0.3333333333333333,
+    "SendNotification": 0.3333333333333333,
+    "CancelCart": 0.0,
+    "GenerateReport": 0.0,
+    "UpdateProfile": 0.0,
+    "SendMarketingEmail": 0.0,
+    "ExportLogs": 0.0
+   },
+   "auc": 1.0
+  },
+  "cold": {
+   "relevance": {
+    "Authenticate": 0.07142857142857142,
+    "CreateCart": 0.14285714285714285,
+    "AddItem": 0.07142857142857142,
+    "CreateOrder_API": 0.3333333333333333,
+    "CreateOrder_DB": 0.3333333333333333,
+    "CreateOrder_GUI": 0.3333333333333333,
+    "MakePayment_Gateway": 0.3333333333333333,
+    "MakePayment_Backup": 0.3333333333333333,
+    "MakePayment_Bank": 0.3333333333333333,
+    "SendNotification": 0.3333333333333333,
+    "CancelCart": 0.0,
+    "GenerateReport": 0.0,
+    "UpdateProfile": 0.0,
+    "SendMarketingEmail": 0.0,
+    "ExportLogs": 0.0
+   },
+   "auc": 1.0
+  }
+ },
+ "exp5": {
+  "12": {
+   "MakePayment_Gateway": 0.09895833333333333,
+   "MakePayment_Backup": 0.07305433186490455,
+   "MakePayment_Bank": 0.11643356643356642
+  },
+  "22": {
+   "MakePayment_Gateway": 0.09895833333333333,
+   "MakePayment_Backup": 0.07305433186490455,
+   "MakePayment_Bank": 0.0
+  },
+  "fn_sim": 0.9999999999999998,
+  "op_sim": 0.9575882764229382,
+  "bank_chain_unavail_22h": 1.0
+ },
+ "eval": {
+  "ecommerce": {
+   "n_caps": 15,
+   "dim": 114,
+   "A": 19,
+   "D": 9,
+   "agree_with_symbolic": 1.0,
+   "auc_compat_score": 1.0,
+   "auc_cosine_baseline": 0.4529494382022472,
+   "acc_cosine_baseline": 0.8476190476190476,
+   "n_composable_pairs": 32,
+   "distinct_vectors": true,
+   "min_pair_distance": 10.295630140987,
+   "chains_tested": 400,
+   "max_vec_vs_formal_diff": 1.6653345369377348e-16,
+   "semantic_sound": 1.0,
+   "encode_us": 17.066585000122814,
+   "compat_matrix_ms": 0.11491016000036325,
+   "bytes_per_cap": 912
+  },
+  "filepipeline": {
+   "n_caps": 8,
+   "dim": 76,
+   "A": 10,
+   "D": 4,
+   "agree_with_symbolic": 1.0,
+   "auc_compat_score": 1.0,
+   "auc_cosine_baseline": 0.4219858156028369,
+   "acc_cosine_baseline": 0.8392857142857143,
+   "n_composable_pairs": 9,
+   "distinct_vectors": true,
+   "min_pair_distance": 10.535659262546265,
+   "chains_tested": 91,
+   "max_vec_vs_formal_diff": 1.249000902703301e-16,
+   "semantic_sound": 1.0,
+   "encode_us": 17.12835999995832,
+   "compat_matrix_ms": 0.08554075999995803,
+   "bytes_per_cap": 608
+  },
+  "assignment_pattern": {
+   "n_caps": 3,
+   "dim": 45,
+   "A": 4,
+   "D": 0,
+   "agree_with_symbolic": 1.0,
+   "auc_compat_score": 1.0,
+   "auc_cosine_baseline": 0.9,
+   "acc_cosine_baseline": 0.8333333333333334,
+   "n_composable_pairs": 1,
+   "distinct_vectors": true,
+   "min_pair_distance": 2.0,
+   "chains_tested": 1,
+   "max_vec_vs_formal_diff": 0.0,
+   "semantic_sound": 1.0,
+   "encode_us": 14.080099999915774,
+   "compat_matrix_ms": 0.07006514000011066,
+   "bytes_per_cap": 360
+  }
+ },
+ "scaling": {
+  "100": {
+   "dim": 293,
+   "all_pairs_ms": 1.0553309999750127,
+   "mem_MB": 0.2344
+  },
+  "500": {
+   "dim": 293,
+   "all_pairs_ms": 13.274750000022095,
+   "mem_MB": 1.172
+  },
+  "2000": {
+   "dim": 293,
+   "all_pairs_ms": 147.82800800000473,
+   "mem_MB": 4.688
+  }
+ }
+}

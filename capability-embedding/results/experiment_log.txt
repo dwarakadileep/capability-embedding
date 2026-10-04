@@ -1,0 +1,160 @@
+
+==============================================================================
+EXP 1  Capability compatibility (assignment pattern: C1=CreateOrder, C2=MakePayment, C3=CancelCart)
+==============================================================================
+C1->C2  {'feed': 1.0, 'feed_pre': 1.0, 'feed_io': 0.0, 'conflict': 0.0, 'score': 1.0, 'composable': True}
+C1->C3  {'feed': 0.0, 'feed_pre': 0.0, 'feed_io': 0.0, 'conflict': 1.0, 'score': 0.0, 'composable': False}
+cosine(full) C1,C2 = 0.194   C1,C3 = 0.065   (similarity alone cannot decide)
+PASS
+
+==============================================================================
+EXP 2  Capability composition  C1 -> C2 -> C3  (ecommerce)
+==============================================================================
+composite pre : ['User.authenticated==True', 'Cart.exists==True', 'Cart.item_count>0', 'Inventory.available==True']
+composite eff : ['Notification.sent==True', 'Payment.status==SUCCESS', 'Order.exists==True', 'Order.status==CREATED', 'Cart.locked==True']
+composite in  : {'cart_id:UUID': 1.0, 'payment_method:STRING': 1.0}  out: ['order_id:UUID', 'payment_id:UUID']
+valid=True  reliability=0.9311  time=980ms  risk=0.078
+max |vector-compose - encode(formal composite)| = 6.94e-17
+  cos(composite, CreateOrder_API       ) function=0.756 full=0.813
+  cos(composite, MakePayment_Gateway   ) function=0.535 full=0.437
+  cos(composite, SendNotification      ) function=0.378 full=0.166
+reversed order rejected: no link SendNotification -> MakePayment_Gateway
+associativity gap  (C3.C2).C1 vs C3.(C2.C1) = 1.11e-16
+applicable in warm state: {'score': 1.0, 'applicable': True}   goal progress before: 0.00
+goal progress after executing chain: 1.00
+composite is itself composable into GenerateReport? True
+
+==============================================================================
+EXP 3  Alternative implementations (CreateOrder via API / DB / GUI)
+==============================================================================
+CreateOrder_API~CreateOrder_DB           function=1.000 full=0.950 identical=False composable_with_each_other=False
+CreateOrder_API~CreateOrder_GUI          function=1.000 full=0.950 identical=False composable_with_each_other=False
+CreateOrder_DB~CreateOrder_GUI           function=1.000 full=0.947 identical=False composable_with_each_other=False
+reference: full cos(CreateOrder_API, MakePayment_Gateway) = 0.052
+PASS
+
+==============================================================================
+EXP 4  Irrelevant capabilities / goal relevance (state-dependent)
+==============================================================================
+
+-- state 'warm'  goal progress 0.00
+  CreateOrder_API        relevance=0.333  
+  CreateOrder_DB         relevance=0.333  
+  CreateOrder_GUI        relevance=0.333  
+  MakePayment_Gateway    relevance=0.333  
+  MakePayment_Backup     relevance=0.333  
+  MakePayment_Bank       relevance=0.333  
+  SendNotification       relevance=0.333  
+  Authenticate           relevance=0.000  
+  CreateCart             relevance=0.000  
+  AddItem                relevance=0.000  
+  CancelCart             relevance=0.000  [irrelevant by design]
+  GenerateReport         relevance=0.000  [irrelevant by design]
+  UpdateProfile          relevance=0.000  [irrelevant by design]
+  SendMarketingEmail     relevance=0.000  [irrelevant by design]
+  ExportLogs             relevance=0.000  [irrelevant by design]
+  AUC(relevance separates useful from irrelevant) = 1.000
+
+-- state 'cold'  goal progress 0.00
+  CreateOrder_API        relevance=0.333  
+  CreateOrder_DB         relevance=0.333  
+  CreateOrder_GUI        relevance=0.333  
+  MakePayment_Gateway    relevance=0.333  
+  MakePayment_Backup     relevance=0.333  
+  MakePayment_Bank       relevance=0.333  
+  SendNotification       relevance=0.333  
+  CreateCart             relevance=0.143  
+  Authenticate           relevance=0.071  
+  AddItem                relevance=0.071  
+  CancelCart             relevance=0.000  [irrelevant by design]
+  GenerateReport         relevance=0.000  [irrelevant by design]
+  UpdateProfile          relevance=0.000  [irrelevant by design]
+  SendMarketingEmail     relevance=0.000  [irrelevant by design]
+  ExportLogs             relevance=0.000  [irrelevant by design]
+  AUC(relevance separates useful from irrelevant) = 1.000
+
+CreateOrder_API -> GenerateReport composable=True but relevance=0.000  => composability != relevance
+
+==============================================================================
+EXP 5  Operational attributes (cost, reliability, availability, risk, resources)
+==============================================================================
+
+-- at t=12:00
+  MakePayment_Gateway  rel=0.33 success_p=0.950 unavailable=0 risk=0.05 cost_scalar=2.200 resources=['Payment gateway', 'Network']  utility=0.0990
+  MakePayment_Backup   rel=0.33 success_p=0.995 unavailable=0 risk=0.02 cost_scalar=3.540 resources=['Payment gateway', 'Network']  utility=0.0731
+  MakePayment_Bank     rel=0.33 success_p=0.999 unavailable=0 risk=0.08 cost_scalar=1.860 resources=['External service', 'Network']  utility=0.1164
+
+-- at t=22:00
+  MakePayment_Gateway  rel=0.33 success_p=0.950 unavailable=0 risk=0.05 cost_scalar=2.200 resources=['Payment gateway', 'Network']  utility=0.0990
+  MakePayment_Backup   rel=0.33 success_p=0.995 unavailable=0 risk=0.02 cost_scalar=3.540 resources=['Payment gateway', 'Network']  utility=0.0731
+  MakePayment_Bank     rel=0.33 success_p=0.999 unavailable=1 risk=0.08 cost_scalar=1.860 resources=['External service', 'Network']  utility=0.0000
+
+Gateway vs Backup: function similarity=1.000 (same job), operational similarity=0.958 (different cost/risk)
+composite reliability = product of parts = 0.9311
+chain containing Bank payment at 22:00 -> unavailable flag = 1 (any unavailable part blocks the composite)
+
+==============================================================================
+EVALUATION  consistency / distinctness / composition validity / efficiency
+==============================================================================
+
+[ecommerce]
+  n_caps                     15
+  dim                        114
+  A                          19
+  D                          9
+  agree_with_symbolic        1
+  auc_compat_score           1
+  auc_cosine_baseline        0.4529
+  acc_cosine_baseline        0.8476
+  n_composable_pairs         32
+  distinct_vectors           True
+  min_pair_distance          10.3
+  chains_tested              400
+  max_vec_vs_formal_diff     1.665e-16
+  semantic_sound             1
+  encode_us                  17.07
+  compat_matrix_ms           0.1149
+  bytes_per_cap              912
+
+[filepipeline]
+  n_caps                     8
+  dim                        76
+  A                          10
+  D                          4
+  agree_with_symbolic        1
+  auc_compat_score           1
+  auc_cosine_baseline        0.422
+  acc_cosine_baseline        0.8393
+  n_composable_pairs         9
+  distinct_vectors           True
+  min_pair_distance          10.54
+  chains_tested              91
+  max_vec_vs_formal_diff     1.249e-16
+  semantic_sound             1
+  encode_us                  17.13
+  compat_matrix_ms           0.08554
+  bytes_per_cap              608
+
+[assignment_pattern]
+  n_caps                     3
+  dim                        45
+  A                          4
+  D                          0
+  agree_with_symbolic        1
+  auc_compat_score           1
+  auc_cosine_baseline        0.9
+  acc_cosine_baseline        0.8333
+  n_composable_pairs         1
+  distinct_vectors           True
+  min_pair_distance          2
+  chains_tested              1
+  max_vec_vs_formal_diff     0
+  semantic_sound             1
+  encode_us                  14.08
+  compat_matrix_ms           0.07007
+  bytes_per_cap              360
+synthetic n=  100 dim=293 all-pairs compat      1.1 ms  vectors 0.23 MB
+synthetic n=  500 dim=293 all-pairs compat     13.3 ms  vectors 1.17 MB
+synthetic n= 2000 dim=293 all-pairs compat    147.8 ms  vectors 4.69 MB
+
+saved results/results.json
